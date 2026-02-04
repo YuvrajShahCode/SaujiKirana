@@ -13,9 +13,11 @@ class OrderViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
+        if user.role == 'SUPERUSER':
+            return Order.objects.select_related('customer', 'shop').all()
         if user.role == 'SHOPKEEPER':
-            return Order.objects.filter(shop__owner=user)
-        return Order.objects.filter(customer=user)
+            return Order.objects.select_related('customer', 'shop').filter(shop__owner=user)
+        return Order.objects.select_related('customer', 'shop').filter(customer=user)
 
     def create(self, request, *args, **kwargs):
         # 1. Validate Shop & Location

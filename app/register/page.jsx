@@ -7,18 +7,49 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+import api from "@/lib/api";
+
 export default function RegisterPage() {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState("");
 
-    const handleRegister = (e) => {
+    const handleRegister = async (e) => {
         e.preventDefault();
         setIsLoading(true);
-        // Mock register
-        setTimeout(() => {
+        setError("");
+
+        const formData = new FormData(e.currentTarget);
+        const username = formData.get("username");
+        const email = formData.get("email");
+        const password = formData.get("password");
+        const phone_number = formData.get("phone_number");
+
+        // Backend expects: username, email, password, role (optional, defaults to CUSTOMER), phone_number (optional)
+
+        try {
+            await api.post('/auth/register/', {
+                username,
+                email,
+                password,
+                phone_number
+            });
+
+            router.push("/login?registered=true");
+        } catch (err) {
+            console.error("Register Error:", err);
+            // Django errors are usually { field: ["error"] }
+            let msg = "Registration failed.";
+            if (err.response?.data) {
+                if (err.response.data.username) msg = `Username: ${err.response.data.username[0]}`;
+                else if (err.response.data.email) msg = `Email: ${err.response.data.email[0]}`;
+                else if (err.response.data.password) msg = `Password: ${err.response.data.password[0]}`;
+                else msg = JSON.stringify(err.response.data);
+            }
+            setError(msg);
+        } finally {
             setIsLoading(false);
-            router.push("/");
-        }, 1500);
+        }
     };
 
     return (
@@ -32,14 +63,19 @@ export default function RegisterPage() {
                 </CardHeader>
                 <form onSubmit={handleRegister}>
                     <CardContent className="space-y-4">
+                        {error && (
+                            <div className="p-3 text-sm text-red-500 bg-red-50 rounded-md break-words">
+                                {error}
+                            </div>
+                        )}
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <label htmlFor="firstName">First name</label>
-                                <Input id="firstName" required />
+                                <label htmlFor="username">Username</label>
+                                <Input id="username" name="username" required />
                             </div>
                             <div className="space-y-2">
-                                <label htmlFor="lastName">Last name</label>
-                                <Input id="lastName" required />
+                                <label htmlFor="phone_number">Phone Number</label>
+                                <Input id="phone_number" name="phone_number" placeholder="98XXXXXXXX" />
                             </div>
                         </div>
                         <div className="space-y-2">

@@ -23,6 +23,16 @@ class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['customer']),
+            models.Index(fields=['shop']),
+            models.Index(fields=['status']),
+            models.Index(fields=['shop', 'status']),
+            models.Index(fields=['created_at']),
+        ]
+
     def __str__(self):
         return f"Order #{self.id} - {self.customer.username}"
 

@@ -25,3 +25,33 @@ class RegisterSerializer(serializers.ModelSerializer):
             phone_number=validated_data.get('phone_number', '')
         )
         return user
+
+from shops.models import Shop
+
+class CreateSellerSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+    shop_id = serializers.IntegerField(write_only=True)
+
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'password', 'shop_id')
+
+    def create(self, validated_data):
+        shop_id = validated_data.pop('shop_id')
+        try:
+            shop = Shop.objects.get(id=shop_id)
+        except Shop.DoesNotExist:
+            raise serializers.ValidationError({"shop_id": "Shop not found."})
+
+        user = User.objects.create_user(
+            username=validated_data['username'],
+            email=validated_data.get('email', ''),
+            password=validated_data['password'],
+            role=User.Role.SHOPKEEPER
+        )
+        
+        # Assign shop to this user
+        shop.owner = user
+        shop.save()
+        
+        return user

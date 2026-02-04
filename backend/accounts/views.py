@@ -9,3 +9,11 @@ class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     permission_classes = (AllowAny,)
     serializer_class = RegisterSerializer
+
+from rest_framework.permissions import IsAdminUser
+from .serializers import CreateSellerSerializer
+
+class CreateSellerView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    permission_classes = (IsAdminUser,)
+    serializer_class = CreateSellerSerializer

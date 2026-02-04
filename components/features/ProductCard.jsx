@@ -1,15 +1,27 @@
+"use client";
+
 import { Button } from "@/components/ui/Button";
 import { Plus } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import Image from "next/image";
+import { useCart } from "@/context/CartContext";
 
-export default function ProductCard({ product }) {
+export default function ProductCard({ product, shopId }) {
     const { name, price, image } = product;
+    const { addToCart } = useCart();
+
+    const handleAdd = () => {
+        const result = addToCart(product, shopId);
+        if (!result.success) {
+            alert(result.error);
+        }
+    };
 
     return (
         <Card className="overflow-hidden flex flex-row md:flex-col h-auto md:h-full">
             {/* Image mockup */}
             <div className="relative w-24 h-24 md:w-full md:h-40 bg-muted flex-shrink-0">
+                {/* Image logic unchanged */}
                 {image ? (
                     <Image
                         src={image}
@@ -31,7 +43,7 @@ export default function ProductCard({ product }) {
                     <p className="text-sm font-bold text-primary">₹{price}</p>
                 </div>
 
-                <Button size="sm" variant="outline" className="w-full mt-auto h-8 text-xs">
+                <Button size="sm" variant="outline" className="w-full mt-auto h-8 text-xs" onClick={handleAdd}>
                     <Plus className="h-3 w-3 mr-1" /> Add
                 </Button>
             </CardContent>

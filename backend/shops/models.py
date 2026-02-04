@@ -3,14 +3,27 @@ from django.conf import settings
 import math
 
 class Shop(models.Model):
+    class Status(models.TextChoices):
+        PENDING = 'PENDING', 'Pending'
+        APPROVED = 'APPROVED', 'Approved'
+        SUSPENDED = 'SUSPENDED', 'Suspended'
+
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='shops')
     name = models.CharField(max_length=255)
     address = models.TextField()
     latitude = models.FloatField()
     longitude = models.FloatField()
     delivery_radius_km = models.FloatField(default=6.0)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['latitude', 'longitude']),
+            models.Index(fields=['owner']),
+            models.Index(fields=['status']),
+        ]
 
     def __str__(self):
         return self.name
