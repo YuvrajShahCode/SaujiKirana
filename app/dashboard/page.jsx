@@ -5,8 +5,9 @@ import api from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Loader } from "@/components/ui/Loader";
 import { useRouter } from "next/navigation";
+import AuthGuard from "@/components/auth/AuthGuard";
 
-export default function Dashboard() {
+function DashboardContent() {
     const router = useRouter();
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -19,17 +20,6 @@ export default function Dashboard() {
 
     useEffect(() => {
         const checkAuth = async () => {
-            // Basic Auth Check
-            const token = localStorage.getItem('access_token');
-            if (!token) {
-                router.push('/login');
-                return;
-            }
-
-            // We need to know who the user is. 
-            // In a real app, we'd have a /me endpoint or decode token.
-            // For now, we infer from localStorage or fetch profile if available.
-            // Let's assume we can fetch basic user details or just check role from localStorage
             const role = localStorage.getItem('user_role');
             setUser({ role });
 
@@ -38,21 +28,10 @@ export default function Dashboard() {
 
                 // If Shopkeeper, fetch their shop status first
                 if (role === 'SHOPKEEPER') {
-                    // We need an endpoint to "get my shop". 
-                    // Since we don't have /me/shop, we filter shops by owner=me via filtering logic implicitly or explicitly.
-                    // But standard list /shops/ returns "Active & Approved" usually.
-                    // Let's try fetching /shops/ first. If the backend is set up right for permissions, 
-                    // a SHOPKEEPER might see their own shop even if pending? 
-                    // Actually our backend logic says "Admin or Owner sees their own". 
-                    // So fetching /shops/ should return my shop.
                     const shopRes = await api.get('/shops/');
-                    // Assuming 1 shop per user
-                    const foundShop = shopRes.data.find(s => s.owner === parseInt(localStorage.getItem('user_id') || '0'));
-                    // Wait, we don't have user_id easily. 
-                    // Let's rely on the fact that for SHOPKEEPER, list might return their shop.
-                    // OR we check the response.
+                    // Assuming 1 shop per user and filtering happened in backend or picking first
                     if (shopRes.data.length > 0) {
-                        setMyShop(shopRes.data[0]); // Simplification
+                        setMyShop(shopRes.data[0]);
                     }
                 }
 
@@ -182,5 +161,13 @@ export default function Dashboard() {
                 )}
             </div>
         </div>
+    );
+}
+
+export default function Dashboard() {
+    return (
+        <AuthGuard>
+            <DashboardContent />
+        </AuthGuard>
     );
 }

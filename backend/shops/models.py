@@ -8,7 +8,7 @@ class Shop(models.Model):
         APPROVED = 'APPROVED', 'Approved'
         SUSPENDED = 'SUSPENDED', 'Suspended'
 
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='shops')
+    owner = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='shop')
     name = models.CharField(max_length=255)
     address = models.TextField()
     latitude = models.FloatField()

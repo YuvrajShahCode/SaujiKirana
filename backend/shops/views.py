@@ -18,10 +18,8 @@ class ShopViewSet(viewsets.ModelViewSet):
             if self.request.user.role == 'SUPERUSER':
                 queryset = Shop.objects.select_related('owner').all()
             elif self.request.user.role == 'SHOPKEEPER':
-                # Shopkeeper usually sees their own shop in Dashboard context
-                # But for public list, they see others only if approved
-                # We can handle "My Shop" via a separate action or filter
-                pass
+                # Allow shopkeeper to see their own shop
+                queryset = Shop.objects.filter(owner=self.request.user) | queryset
 
         lat = self.request.query_params.get('lat')
         lng = self.request.query_params.get('lng')
@@ -71,3 +69,8 @@ class ShopViewSet(viewsets.ModelViewSet):
             owner=self.request.user,
             status='PENDING' # Always start as pending
         )
+        # Auto-upgrade user role to SHOPKEEPER
+        user = self.request.user
+        if user.role != 'SHOPKEEPER':
+            user.role = 'SHOPKEEPER'
+            user.save()

@@ -55,3 +55,21 @@ class CreateSellerSerializer(serializers.ModelSerializer):
         shop.save()
         
         return user
+
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework.exceptions import PermissionDenied
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        
+        # Block Superuser
+        if self.user.is_superuser:
+            raise PermissionDenied("Superuser login is restricted to the Admin Panel.")
+
+        # Add custom claims/response data
+        data['role'] = self.user.role
+        data['username'] = self.user.username
+        data['user_id'] = self.user.id
+        
+        return data

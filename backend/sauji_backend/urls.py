@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.urls import path, include
+from django.http import JsonResponse
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -7,4 +8,5 @@ urlpatterns = [
     path('api/shops/', include('shops.urls')),
     path('api/products/', include('products.urls')),
     path('api/orders/', include('orders.urls')),
+    path('', lambda request: JsonResponse({"message": "Sauji Kirana API is running", "status": "OK"})),
 ]

@@ -26,6 +26,13 @@ class OrderViewSet(viewsets.ModelViewSet):
         delivery_lng = float(request.data.get('delivery_lng'))
         shop = Shop.objects.get(id=shop_id)
 
+        # 1.5 Check Shop Status
+        if shop.status != 'APPROVED':
+            return Response(
+                {"error": "This shop is not currently accepting orders."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         # 2. Distance Check (Strict 6km)
         if not shop.is_within_radius(delivery_lat, delivery_lng):
             return Response(
@@ -81,8 +88,8 @@ class OrderViewSet(viewsets.ModelViewSet):
                 price_at_order=item['price']
             )
             # Deduct stock
-            # item['product'].stock -= item['quantity']
-            # item['product'].save()
+            item['product'].stock -= item['quantity']
+            item['product'].save()
 
         serializer = self.get_serializer(order)
         return Response(serializer.data, status=status.HTTP_201_CREATED)

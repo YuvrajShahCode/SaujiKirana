@@ -17,3 +17,9 @@ class CreateSellerView(generics.CreateAPIView):
     queryset = User.objects.all()
     permission_classes = (IsAdminUser,)
     serializer_class = CreateSellerSerializer
+
+from rest_framework_simplejwt.views import TokenObtainPairView
+from .serializers import CustomTokenObtainPairSerializer
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
